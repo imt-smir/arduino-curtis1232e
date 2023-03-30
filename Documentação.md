@@ -55,6 +55,8 @@ Com relação ao ID CANBus da mensagem, temos que achar o código da função, c
 
     Código da Função ---------------------- 1100 
 
-    Endereço (39) ---------------------------          0100111 
+    Endereço (39) -------------------------     0100111 
 
-    COB-ID resultante (ID CANbus) ----- 11000100111 = 627h 
+    COB-ID resultante (ID CANbus) --------- 11000100111 = **627h** 
+    
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem12.png)
