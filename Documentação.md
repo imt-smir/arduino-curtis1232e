@@ -65,7 +65,7 @@ Os 2 bytes do índice são invertidos fazendo com que o primeiro que aparece sej
 
 A nossa mensagem CAN ficou da seguinte forma: 
 
-
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem15.png)
 
 **ID = 627h** 
 
@@ -84,3 +84,24 @@ A nossa mensagem CAN ficou da seguinte forma:
 **Byte 6 = 00**
 
 **Byte 7 = 00**
+
+Como estamos requisitando uma informação, os bytes de dados ficam vazios. 
+
+No código do Arduino o frame fica da seguinte forma: 
+
+
+
+A variável: 
+
+**canMsg1.can_dlc = 8;** 
+
+representa quantos bytes de dados serão enviados na mensagem CAN, por padrão, mantemos sempre o máximo que é 8. 
+
+Após enviarmos obtivemos o seguinte retorno: 
+
+Agora vamos analisar o primeiro byte de dados da resposta, que nesse caso está variando entre E1 e E2 conforme a leitura do sensor, como exemplo vamos utilizar E1h. 
+
+Convertendo de hexadecimal para decimal temos o valor 225 
+
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem16.png)
+
