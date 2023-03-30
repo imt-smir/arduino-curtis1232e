@@ -21,7 +21,7 @@ Na imagem abaixo podemos ver a localização dos pinos no conector do driver
 
 ![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem4.png)
 
-##Programação do Arduino: 
+## Programação do Arduino: 
 
 O protocolo de comunicação utilizado pelo driver é o CANopen, que possui um frame com a mesma quantidade de bits do que o frame de CAN Bus, porém alguns desses bits tem significados diferentes nos 2 protocolos. 
 
