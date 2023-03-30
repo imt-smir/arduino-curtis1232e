@@ -53,10 +53,10 @@ O módulo CAN é o cliente, logo, temos que usar a tabela de cima, e nós querem
 
 Com relação ao ID CANBus da mensagem, temos que achar o código da função, como queremos receber uma informação via SDO de acordo com a tabela 1.2 ele vale **1100** em binário, além disso precisamos saber o ID ou endereço do driver, que no nosso caso é **39** em decimal, agora precisamos juntar esses 2 valores em binário para formar o ID CANbus de 11 bits. 
 
-    Código da Função ---------------------- 1100 
-
-    Endereço (39) -------------------------     0100111 
-
-    COB-ID resultante (ID CANbus) --------- 11000100111 = **627h** 
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem13.png)
     
 ![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem12.png)
+
+Agora precisamos definir os bytes 1, 2 e 3 de acordo com o índice e sub-índice, para a leitura de temperatura eles valem: 
+
+
