@@ -105,3 +105,54 @@ Convertendo de hexadecimal para decimal temos o valor 225
 
 ![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem16.png)
 
+Pelo manual sabemos que o valor variando de -1000 a +3000 equivale a um intervalo de -100 a +300 graus celsius, então para obtermos o valor de temperatura temos que fazer 225/10 = 22,5 graus celsius. 
+
+## Utilizando o comando VCL_Throttle
+
+Este comando é utilizado para definir qual velocidade queremos no motor, o valor enviado pode ser entendido como uma porcentagem da velocidade máxima do motor, ou seja, o parâmetro MAX_SPEED do driver. Por exemplo, se a velocidade máxima é 1000 rpm e a porcentagem colocada é 50%, ele vai rodar a 500 rpm, o mesmo vale para valores negativos de porcentagem, como por exemplo, se for colocada uma porcentagem de -25%, ele vai girar no sentido oposto a 250rpm. 
+
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem17.png)
+
+A variável VCL_Throttle recebe valores de 0 a 65535 e funciona da seguinte forma: 
+
+De 0 a 32767 representa de 0 a 100%  
+
+De 32768 a 65535 representa de -100% a 0% 
+
+Para representar um valor de 0 a 65535 precisamos de 2 bytes, então usaremos os bytes de dados 4 e 5 do frame, o byte 4 é o menos significativo e o 5 é o mais significativo. O próximo passo é dividir o nosso valor em 2 bytes, fizemos da seguinte forma: para obter o byte mais significativo utilizamos um while que subtrai 256 do valor até que reste um valor menor que 256, a quantidade de vezes que subtraímos representa o valor do byte mais significativo. Para o byte menos significativo fizemos o mesmo processo, porém utilizamos como valor a quantidade restante das  subtrações. 
+
+No setup do código os frames para envio do VCL_Throttle ficam da seguinte forma 
+
+No loop os bytes 4 e 5 são atualizados de acordo com a velocidade desejada 
+
+## Utilizando o comando Motor_RPM 
+
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem18.png)
+
+Esse comando será utilizado para obtermos o feedback da velocidade dos motores em RPM, assim como o exemplo da temperatura temos uma solicitação de uma informação, logo, precisamos enviar a mensagem de solicitação e aguardar e filtrar a resposta do sistema. As mensagens de solicitação ficam da seguinte forma:  
+
+A mensagem de resposta esperada possui os mesmos bytes de dados de 0 a 3 do que a de solicitação, porém o ID é diferente, ao invés de concatenar o valor do ID do dispositivo com **b1100** em binário, ele concatena com **b1011**, logo, as mensagens esperadas tem a seguinte forma: 
+
+**ID = 5A7h** 
+
+**Byte 0 = 42h**
+
+**Byte 1 = 07h**
+
+**Byte 2 = 32h**
+
+**Byte 3 = 00h**
+
+**Byte 4 = Byte menos significativo da informação**
+
+**Byte 5 = Byte mais significativo da informação**
+
+**Byte 6 = 00h**
+
+**Byte 7 = 00h**
+
+A filtragem de recebimento de resposta nada mais é do que uma comparação da mensagem recebida com a mensagem esperada, na imagem abaixo podemos ver a declaração da mensagem esperada: 
+
+Na imagem abaixo podemos ver a filtragem da mensagem por meio de comparação: 
+
+Temos também já a lógica que une os 2 bytes de dados, o mais significativo é multiplicado por 256 e o menos significativo é apenas somado ao valor, a partir dessa conta já obtemos o RPM do motor com "sinal" 
