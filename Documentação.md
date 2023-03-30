@@ -60,3 +60,27 @@ Com relação ao ID CANBus da mensagem, temos que achar o código da função, c
 Agora precisamos definir os bytes 1, 2 e 3 de acordo com o índice e sub-índice, para a leitura de temperatura eles valem: 
 
 ![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem14.png)
+
+Os 2 bytes do índice são invertidos fazendo com que o primeiro que aparece seja o byte 2 e o segundo seja o byte 1, o sub-índice é o 3. 
+
+A nossa mensagem CAN ficou da seguinte forma: 
+
+
+
+**ID = 627h** 
+
+**Byte 0 = 40h** 
+
+**Byte 1 = 0Bh** 
+
+**Byte 2 = 32h**
+
+**Byte 3 = 00**
+
+**Byte 4 = 00**
+
+**Byte 5 = 00**
+
+**Byte 6 = 00**
+
+**Byte 7 = 00**
