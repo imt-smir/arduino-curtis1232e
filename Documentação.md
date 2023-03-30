@@ -59,4 +59,4 @@ Com relação ao ID CANBus da mensagem, temos que achar o código da função, c
 
 Agora precisamos definir os bytes 1, 2 e 3 de acordo com o índice e sub-índice, para a leitura de temperatura eles valem: 
 
-
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem14.png)
