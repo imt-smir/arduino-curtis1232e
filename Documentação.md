@@ -9,3 +9,4 @@ Em nosso caso só temos 2 dispositivos em nossa rede, então será necessário c
 
 No Módulo CAN precisamos conectar entre si esses 2 pinos: 
 
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem2.png)
