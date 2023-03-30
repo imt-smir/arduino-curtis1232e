@@ -10,3 +10,9 @@ Em nosso caso só temos 2 dispositivos em nossa rede, então será necessário c
 No Módulo CAN precisamos conectar entre si esses 2 pinos: 
 
 ![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem2.png)
+
+Já no caso do Driver temos que conectar entre si os 2 pinos marcados em verde (CAN Term H e CAN Term L) 
+
+Em amarelo temos os pinos CAN H e CAN L 
+
+![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem3.png)
