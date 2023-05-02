@@ -207,6 +207,30 @@ if((acelerador_E > 0)&&(acelerador_E <= 100)){
 
 Esse comando será utilizado para obtermos o feedback da velocidade dos motores em RPM, assim como o exemplo da temperatura temos uma solicitação de uma informação, logo, precisamos enviar a mensagem de solicitação e aguardar e filtrar a resposta do sistema. As mensagens de solicitação ficam da seguinte forma:  
 
+```
+MOTOR_SPEED_A_E.can_id  = 0x5A7; // ID do driver esquerdo
+MOTOR_SPEED_A_E.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+MOTOR_SPEED_A_E.data[0] = 0x42;  //40 Tipo de mensagem (40h recebe, 2Bh envia)
+MOTOR_SPEED_A_E.data[1] = 0x07;  //07 Segundo byte do indice
+MOTOR_SPEED_A_E.data[2] = 0x32;  //32 Primeiro byte do indice
+MOTOR_SPEED_A_E.data[3] = 0x00;  // Sub-indice
+MOTOR_SPEED_A_E.data[4] = 0x00;  // Segundo byte de dados
+MOTOR_SPEED_A_E.data[5] = 0x80;  // Primeiro byte de dados
+MOTOR_SPEED_A_E.data[6] = 0x00;  // Byte de dados não usado
+MOTOR_SPEED_A_E.data[7] = 0x00;  // Byte de dados não usado
+  
+MOTOR_SPEED_A_D.can_id  = 0x626; // ID do driver direito
+MOTOR_SPEED_A_D.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+MOTOR_SPEED_A_D.data[0] = 0x40;  // Tipo de mensagem (40h recebe, 2Bh envia)
+MOTOR_SPEED_A_D.data[1] = 0x07;  // Segundo byte do indice
+MOTOR_SPEED_A_D.data[2] = 0x32;  // Primeiro byte do indice
+MOTOR_SPEED_A_D.data[3] = 0x00;  // Sub-indice
+MOTOR_SPEED_A_D.data[4] = 0x00;  // Segundo byte de dados
+MOTOR_SPEED_A_D.data[5] = 0x00;  // Primeiro byte de dados
+MOTOR_SPEED_A_D.data[6] = 0x00;  // Byte de dados não usado
+MOTOR_SPEED_A_D.data[7] = 0x00;  // Byte de dados não usado
+```
+
 A mensagem de resposta esperada possui os mesmos bytes de dados de 0 a 3 do que a de solicitação, porém o ID é diferente, ao invés de concatenar o valor do ID do dispositivo com **b1100** em binário, ele concatena com **b1011**, logo, as mensagens esperadas tem a seguinte forma: 
 
 **ID = 5A7h** 
