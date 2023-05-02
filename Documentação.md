@@ -253,6 +253,7 @@ A mensagem de resposta esperada possui os mesmos bytes de dados de 0 a 3 do que 
 
 A filtragem de recebimento de resposta nada mais é do que uma comparação da mensagem recebida com a mensagem esperada, na imagem abaixo podemos ver a declaração da mensagem esperada: 
 
+```cpp
 MOTOR_SPEED_A_E_recv.can_id  = 0x5A7; // ID do driver esquerdo
 MOTOR_SPEED_A_E_recv.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
 MOTOR_SPEED_A_E_recv.data[0] = 0x42;  // Tipo de mensagem (40h recebe, 2Bh envia)
@@ -266,6 +267,7 @@ MOTOR_SPEED_A_D_recv.data[0] = 0x42;  // Tipo de mensagem (40h recebe, 2Bh envia
 MOTOR_SPEED_A_D_recv.data[1] = 0x07;  // Segundo byte do indice
 MOTOR_SPEED_A_D_recv.data[2] = 0x32;  // Primeiro byte do indice
 MOTOR_SPEED_A_D_recv.data[3] = 0x00;  // Sub-indice
+```
 
 Na imagem abaixo podemos ver a filtragem da mensagem por meio de comparação: 
 
