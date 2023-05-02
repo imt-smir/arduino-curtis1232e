@@ -184,7 +184,7 @@ VCL_ThrottleD.data[7] = 0x00;  // Byte de dados não usado
 
 No loop os bytes 4 e 5 são atualizados de acordo com a velocidade desejada 
 
-```
+```cpp
 if((acelerador_E > 0)&&(acelerador_E <= 100)){
     VCL_ThrottleE.data[4] = converterLSB(map(acelerador_E, 0, 100, 0, 32767));
     VCL_ThrottleE.data[5] = converterMSB(map(acelerador_E, 0, 100, 0, 32767));
