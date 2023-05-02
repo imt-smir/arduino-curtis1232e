@@ -90,7 +90,7 @@ Como estamos requisitando uma informação, os bytes de dados ficam vazios.
 No código do Arduino o frame fica da seguinte forma: 
 
 'oi'
-''' cpp
+```cpp
 canMsgSend.can_id  = 0x627; // ID CANbus
 canMsgSend.can_dlc = 8;     // Tamanho da mensagem em bytes
 canMsgSend.data[0] = 0x40;  // Controle
@@ -101,7 +101,7 @@ canMsgSend.data[4] = 0x00;  //
 canMsgSend.data[5] = 0x00;  //
 canMsgSend.data[6] = 0x00;  //
 canMsgSend.data[7] = 0x00;  //
-'''
+```
 
 A variável: 
 
