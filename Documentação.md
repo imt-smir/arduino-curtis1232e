@@ -158,6 +158,30 @@ byte converterLSB(long valor){
 
 No setup do código os frames para envio do VCL_Throttle ficam da seguinte forma 
 
+```
+VCL_ThrottleE.can_id  = 0x627; // ID do driver esquerdo
+VCL_ThrottleE.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+VCL_ThrottleE.data[0] = 0x2B;  // Tipo de mensagem (40h recebe, 2Bh envia)
+VCL_ThrottleE.data[1] = 0x18;  // Segundo byte do indice
+VCL_ThrottleE.data[2] = 0x32;  // Primeiro byte do indice
+VCL_ThrottleE.data[3] = 0x00;  // Sub-indice
+VCL_ThrottleE.data[4] = 0x00;  // Segundo byte de dados
+VCL_ThrottleE.data[5] = 0x00;  // Primeiro byte de dados
+VCL_ThrottleE.data[6] = 0x00;  // Byte de dados não usado
+VCL_ThrottleE.data[7] = 0x00;  // Byte de dados não usado
+
+VCL_ThrottleD.can_id  = 0x626; // ID do driver direito
+VCL_ThrottleD.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+VCL_ThrottleD.data[0] = 0x2B;  // Tipo de mensagem (40h recebe, 2Bh envia)
+VCL_ThrottleD.data[1] = 0x18;  // Segundo byte do indice
+VCL_ThrottleD.data[2] = 0x32;  // Primeiro byte do indice
+VCL_ThrottleD.data[3] = 0x00;  // Sub-indice
+VCL_ThrottleD.data[4] = 0x00;  // Segundo byte de dados
+VCL_ThrottleD.data[5] = 0x00;  // Primeiro byte de dados
+VCL_ThrottleD.data[6] = 0x00;  // Byte de dados não usado
+VCL_ThrottleD.data[7] = 0x00;  // Byte de dados não usado
+```
+
 No loop os bytes 4 e 5 são atualizados de acordo com a velocidade desejada 
 
 ## Utilizando o comando Motor_RPM 
