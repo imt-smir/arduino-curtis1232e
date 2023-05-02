@@ -184,6 +184,23 @@ VCL_ThrottleD.data[7] = 0x00;  // Byte de dados não usado
 
 No loop os bytes 4 e 5 são atualizados de acordo com a velocidade desejada 
 
+```
+if((acelerador_E > 0)&&(acelerador_E <= 100)){
+    VCL_ThrottleE.data[4] = converterLSB(map(acelerador_E, 0, 100, 0, 32767));
+    VCL_ThrottleE.data[5] = converterMSB(map(acelerador_E, 0, 100, 0, 32767));
+}
+  
+  if((acelerador_E < 0)&&(acelerador_E >= -100)){
+    VCL_ThrottleE.data[4] = converterLSB(map(acelerador_E, -100, 0, 32768, 65535));
+    VCL_ThrottleE.data[5] = converterMSB(map(acelerador_E, -100, 0, 32768, 65535));
+}
+
+  if(acelerador_E == 0){
+    VCL_ThrottleE.data[4] = converterLSB(0);
+    VCL_ThrottleE.data[5] = converterMSB(0);
+}
+```
+
 ## Utilizando o comando Motor_RPM 
 
 ![This is an image](https://github.com/imt-smir/arduino-curtis1232e/blob/main/Imagens/Imagem18.png)
