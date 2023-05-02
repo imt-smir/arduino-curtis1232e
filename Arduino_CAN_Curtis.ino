@@ -1,180 +1,134 @@
+//
+// Este código consiste no controle do RPM desejado dos 2 motores,
+// e na leitura em tempo real dessas velocidades pelo monitor serial
+// 
+// Este código foi pensado para uso de um Arduino Uno em conjunto com um módulo CAN MCP2515
+//
+
 #include <SPI.h>
 #include <mcp2515.h>
 
+// Mensagens CAN
+
 struct can_frame VCL_ThrottleE; // acelerador_E Motor Esquerdo
-struct can_frame VCL_ThrottleD; // acelerador_E Motor Direito
-struct can_frame MAX_SPEED_E;   // Max Speed Motor Esquerdo
-struct can_frame MAX_SPEED_D;   // Max Speed Motor Direito
+struct can_frame VCL_ThrottleD; // acelerador_D Motor Direito
+struct can_frame MOTOR_SPEED_A_E; // Leitura RPM Esquerdo (Solicitação)
+struct can_frame MOTOR_SPEED_A_D; // Leitura RPM Direito  (Solicitação)
+struct can_frame MOTOR_SPEED_A_E_recv; // Leitura RPM Esquerdo (Recebimento)
+struct can_frame MOTOR_SPEED_A_D_recv; // Leitura RPM Direito  (Recebimento)
+struct can_frame canMsgReceive; // Receber mensagem CAN
 
-MCP2515 mcp2515(10);
+MCP2515 mcp2515(10); // Pino CS do Módulo CAN
 
-long valor = 0;
+long previousMillis = 0;
 
-long t = 0;
+int maxspeed = 760; // Velocidade máxima do motor definida nos parâmetros do driver (RPM)
 
-int ENC_E_A = 2; // Canal A do encoder esquerdo
-int ENC_E_B = 4; // Canal B do encoder esquerdo
-int ENC_D_A = 3; // Canal A do encoder direito
-int ENC_D_B = 5; // Canal B do encoder direito
+int acelerador_E = 0; // Porcentagem da velocidade aplicada no motor esq. em relação a velocidade máxima
+int acelerador_D = 0; // Porcentagem da velocidade aplicada no motor dir. em relação a velocidade máxima
 
-long contE = 0;
-long contD = 0;
+int rpm_E = 300; // RPM desejado no motor esquerdo
+int rpm_D = 300; // RPM desejado no motor direito
 
-long contAntE = 0;
-long contAntD = 0;
+int rpmLidoE = 0; // RPM lido no motor esquerdo
+int rpmLidoD = 0; // RPM lido no motor direito
 
-int flagE = 0;
-int flagD = 0;
+int periodoLeitura = 120; // tempo de leitura em ms
 
-int maxspeed = 2500;
-
-int acelerador_E = 10;
-int acelerador_D = 10;
-
-int rpm_E = 760;
-int rpm_D = 760;
-int rpmLidoE = 0;
-int rpmLidoD = 0;
+int tarefa_atual = 0;
+int n_tarefas = 3;
 
 void setup() {
   
-  while (!Serial);
   Serial.begin(115200);
   
   mcp2515.reset();
-  mcp2515.setBitrate(CAN_1000KBPS);
+  mcp2515.setBitrate(CAN_500KBPS, MCP_8MHZ); // BaudRate do CAN do driver
   mcp2515.setNormalMode();
 
-  //attachInterrupt(digitalPinToInterrupt(ENC_E_A), LerEncoderE, RISING);
-  //attachInterrupt(digitalPinToInterrupt(ENC_D_A), LerEncoderD, RISING);
-  pinMode(ENC_E_B, INPUT_PULLUP);
-  pinMode(ENC_D_B, INPUT_PULLUP);
-  pinMode(ENC_E_A, INPUT_PULLUP);
-  pinMode(ENC_D_A, INPUT_PULLUP);
-
-  VCL_ThrottleE.can_id  = 0x627;
-  VCL_ThrottleE.can_dlc = 8;
-  VCL_ThrottleE.data[0] = 0x2B;
-  VCL_ThrottleE.data[1] = 0x18;
-  VCL_ThrottleE.data[2] = 0x32;
-  VCL_ThrottleE.data[3] = 0x00;
-  VCL_ThrottleE.data[4] = 0x00;
-  VCL_ThrottleE.data[5] = 0x00;
-  VCL_ThrottleE.data[6] = 0x00;
-  VCL_ThrottleE.data[7] = 0x00;
-
-  VCL_ThrottleD.can_id  = 0x626;
-  VCL_ThrottleD.can_dlc = 8;
-  VCL_ThrottleD.data[0] = 0x2B;
-  VCL_ThrottleD.data[1] = 0x18;
-  VCL_ThrottleD.data[2] = 0x32;
-  VCL_ThrottleD.data[3] = 0x00;
-  VCL_ThrottleD.data[4] = 0x00;
-  VCL_ThrottleD.data[5] = 0x00;
-  VCL_ThrottleD.data[6] = 0x00;
-  VCL_ThrottleD.data[7] = 0x00;
-
-  MAX_SPEED_E.can_id  = 0x627;
-  MAX_SPEED_E.can_dlc = 8;
-  MAX_SPEED_E.data[0] = 0x2B;
-  MAX_SPEED_E.data[1] = 0x11;
-  MAX_SPEED_E.data[2] = 0x30;
-  MAX_SPEED_E.data[3] = 0x00;
-  MAX_SPEED_E.data[4] = 0x00;
-  MAX_SPEED_E.data[5] = 0x00;
-  MAX_SPEED_E.data[6] = 0x00;
-  MAX_SPEED_E.data[7] = 0x00;
-
-  MAX_SPEED_D.can_id  = 0x626;
-  MAX_SPEED_D.can_dlc = 8;
-  MAX_SPEED_D.data[0] = 0x2B;
-  MAX_SPEED_D.data[1] = 0x11;
-  MAX_SPEED_D.data[2] = 0x30;
-  MAX_SPEED_D.data[3] = 0x00;
-  MAX_SPEED_D.data[4] = 0x00;
-  MAX_SPEED_D.data[5] = 0x00;
-  MAX_SPEED_D.data[6] = 0x00;
-  MAX_SPEED_D.data[7] = 0x00;
+  mensagensCAN(); // Declara o frame das mensagens CAN
   
 }
 
 void loop() {
 
+  if(millis() - previousMillis > periodoLeitura/n_tarefas){
+
+    if(tarefa_atual == 0){
+      Throttle_CAN(rpm_E, rpm_D); // Envia a velocidade desejada de cada motor em RPM
+      tarefa_atual++;
+    }
+
+    else if(tarefa_atual == 1){
+      mcp2515.sendMessage(&MOTOR_SPEED_A_E); // Envia a solicitação de leitura da velocidade do motor esq.
+      Serial.print(rpmLidoE);
+      Serial.print('\t');
+      tarefa_atual++;
+    }
+    
+    else if(tarefa_atual == 2){
+      mcp2515.sendMessage(&MOTOR_SPEED_A_D); // Envia a solicitação de leitura da velocidade do motor dir.
+      Serial.println(rpmLidoD);
+      tarefa_atual = 0;
+    }
+    
+    previousMillis = millis();
+  }
+
+  LerRPM();
+   
+}
+
+void LerRPM(){
+
+  // Verifica se recebeu uma mensagem CAN
+  
+  if (mcp2515.readMessage(&canMsgReceive) == MCP2515::ERROR_OK) {
+
+     // Verifica se a mensagem recebida corresponde a velocidade do motor esquerdo
+     
+     if ((canMsgReceive.can_id == MOTOR_SPEED_A_E_recv.can_id)&& 
+       (canMsgReceive.can_dlc == MOTOR_SPEED_A_E_recv.can_dlc)&&
+       (canMsgReceive.data[0] == MOTOR_SPEED_A_E_recv.data[0])&&
+       (canMsgReceive.data[1] == MOTOR_SPEED_A_E_recv.data[1])&&
+       (canMsgReceive.data[2] == MOTOR_SPEED_A_E_recv.data[2])&&
+       (canMsgReceive.data[3] == MOTOR_SPEED_A_E_recv.data[3]))
+       {
+        // Une os valores dos bytes de dados 4 e 5 do frame para gerar o valor do RPM
+        rpmLidoE = canMsgReceive.data[5]*256 + canMsgReceive.data[4];
+      } 
+
+      // Verifica se a mensagem recebida corresponde a velocidade do motor direito
+      
+      if ((canMsgReceive.can_id == MOTOR_SPEED_A_D_recv.can_id)&&
+       (canMsgReceive.can_dlc == MOTOR_SPEED_A_D_recv.can_dlc)&&
+       (canMsgReceive.data[0] == MOTOR_SPEED_A_D_recv.data[0])&&
+       (canMsgReceive.data[1] == MOTOR_SPEED_A_D_recv.data[1])&&
+       (canMsgReceive.data[2] == MOTOR_SPEED_A_D_recv.data[2])&&
+       (canMsgReceive.data[3] == MOTOR_SPEED_A_D_recv.data[3]))
+       {
+        // Une os valores dos bytes de dados 4 e 5 do frame para gerar o valor do RPM
+        rpmLidoD = canMsgReceive.data[5]*256 + canMsgReceive.data[4];
+      } 
+   }
+}
+
+void Throttle_CAN(int rpm_E, int rpm_D){
+
   acelerador_E = rpm_E*100.0/maxspeed;
   acelerador_D = rpm_D*100.0/maxspeed;
   
-
-  if(millis() - t > 100){
-    mcp2515.sendMessage(&VCL_ThrottleE);
-    mcp2515.sendMessage(&MAX_SPEED_E);
-    mcp2515.sendMessage(&VCL_ThrottleD);
-    mcp2515.sendMessage(&MAX_SPEED_D);
-
-/*
-    Serial.print(contE);
-    Serial.print('\t');
-    Serial.println(contD);
-  */
-    rpmLidoE = (contE - contAntE)*600/32;
-    rpmLidoD = (contD - contAntD)*600/32;
-    contAntE = contE;
-    contAntD = contD;
-    Serial.print(rpmLidoE);
-    Serial.print('\t');
-    Serial.println(rpmLidoD);
-    
-    t = millis();
-    
-  }
-    
-  if((digitalRead(ENC_D_A) == HIGH)&&(flagD == 0)){
-    flagD = 1;
-    if (digitalRead(ENC_D_B) == LOW) {
-      contD++;
-    }
-    else {
-      contD--;
-    }
-  }
-  
-  if(digitalRead(ENC_D_A) == LOW){
-    flagD = 0;
-  }
-
-
-
-
-  if((digitalRead(ENC_E_A) == HIGH)&&(flagE == 0)){
-    flagE = 1;
-    if (digitalRead(ENC_E_B) == HIGH) {
-      contE++;
-    }
-    else {
-      contE--;
-    }
-  }
-  
-  if(digitalRead(ENC_E_A) == LOW){
-    flagE = 0;
-  }
-  
   if((acelerador_E > 0)&&(acelerador_E <= 100)){
-    MAX_SPEED_E.data[4] = converterLSB(maxspeed);
-    MAX_SPEED_E.data[5] = converterMSB(maxspeed);
     VCL_ThrottleE.data[4] = converterLSB(map(acelerador_E, 0, 100, 0, 32767));
     VCL_ThrottleE.data[5] = converterMSB(map(acelerador_E, 0, 100, 0, 32767));
   }
   
   if((acelerador_E < 0)&&(acelerador_E >= -100)){
-    MAX_SPEED_E.data[4] = converterLSB(maxspeed);
-    MAX_SPEED_E.data[5] = converterMSB(maxspeed);
     VCL_ThrottleE.data[4] = converterLSB(map(acelerador_E, -100, 0, 32768, 65535));
     VCL_ThrottleE.data[5] = converterMSB(map(acelerador_E, -100, 0, 32768, 65535));
   }
 
   if(acelerador_E == 0){
-    MAX_SPEED_E.data[4] = converterLSB(100);
-    MAX_SPEED_E.data[5] = converterMSB(100);
     VCL_ThrottleE.data[4] = converterLSB(0);
     VCL_ThrottleE.data[5] = converterMSB(0);
   }
@@ -186,26 +140,17 @@ void loop() {
     acelerador_E = -100;
   }
 
-
-
-
   if((acelerador_D > 0)&&(acelerador_D <= 100)){
-    MAX_SPEED_D.data[4] = converterLSB(maxspeed);
-    MAX_SPEED_D.data[5] = converterMSB(maxspeed);
     VCL_ThrottleD.data[4] = converterLSB(map(acelerador_D, 0, 100, 0, 32767));
     VCL_ThrottleD.data[5] = converterMSB(map(acelerador_D, 0, 100, 0, 32767));
   }
   
   if((acelerador_D < 0)&&(acelerador_D >= -100)){
-    MAX_SPEED_D.data[4] = converterLSB(maxspeed);
-    MAX_SPEED_D.data[5] = converterMSB(maxspeed);
     VCL_ThrottleD.data[4] = converterLSB(map(acelerador_D, -100, 0, 32768, 65535));
     VCL_ThrottleD.data[5] = converterMSB(map(acelerador_D, -100, 0, 32768, 65535));
   }
 
   if(acelerador_D == 0){
-    MAX_SPEED_D.data[4] = converterLSB(100);
-    MAX_SPEED_D.data[5] = converterMSB(100);
     VCL_ThrottleD.data[4] = converterLSB(0);
     VCL_ThrottleD.data[5] = converterMSB(0);
   }
@@ -217,8 +162,11 @@ void loop() {
     acelerador_D = -100;
   }
   
-  
+  mcp2515.sendMessage(&VCL_ThrottleE);
+  mcp2515.sendMessage(&VCL_ThrottleD);
 }
+
+// Separa o byte mais significativo do valor a ser enviado 
 
 byte converterMSB(long valor){
     byte byte1 = 0;
@@ -229,6 +177,8 @@ byte converterMSB(long valor){
   return byte1;
 }
 
+// Separa o byte menos significativo do valor a ser enviado 
+
 byte converterLSB(long valor){
    while(valor >= 256){
       valor -= 256;
@@ -236,21 +186,64 @@ byte converterLSB(long valor){
   return valor;
 }
 
-void LerEncoderE() {
-  if (digitalRead(ENC_E_B) == HIGH) {
-    contE++;
-  }
-  else {
-    contE--;
-  }
-}
+void mensagensCAN(){
+  
+  VCL_ThrottleE.can_id  = 0x627; // ID do driver esquerdo
+  VCL_ThrottleE.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+  VCL_ThrottleE.data[0] = 0x2B;  // Tipo de mensagem (40h recebe, 2Bh envia)
+  VCL_ThrottleE.data[1] = 0x18;  // Segundo byte do indice
+  VCL_ThrottleE.data[2] = 0x32;  // Primeiro byte do indice
+  VCL_ThrottleE.data[3] = 0x00;  // Sub-indice
+  VCL_ThrottleE.data[4] = 0x00;  // Segundo byte de dados
+  VCL_ThrottleE.data[5] = 0x00;  // Primeiro byte de dados
+  VCL_ThrottleE.data[6] = 0x00;  // Byte de dados não usado
+  VCL_ThrottleE.data[7] = 0x00;  // Byte de dados não usado
 
-void LerEncoderD() {
-  if (digitalRead(ENC_D_B) == LOW) {
-    contD++;
-  }
-  else {
-    contD--;
-  }
+  VCL_ThrottleD.can_id  = 0x626; // ID do driver direito
+  VCL_ThrottleD.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+  VCL_ThrottleD.data[0] = 0x2B;  // Tipo de mensagem (40h recebe, 2Bh envia)
+  VCL_ThrottleD.data[1] = 0x18;  // Segundo byte do indice
+  VCL_ThrottleD.data[2] = 0x32;  // Primeiro byte do indice
+  VCL_ThrottleD.data[3] = 0x00;  // Sub-indice
+  VCL_ThrottleD.data[4] = 0x00;  // Segundo byte de dados
+  VCL_ThrottleD.data[5] = 0x00;  // Primeiro byte de dados
+  VCL_ThrottleD.data[6] = 0x00;  // Byte de dados não usado
+  VCL_ThrottleD.data[7] = 0x00;  // Byte de dados não usado
+  
+  MOTOR_SPEED_A_E.can_id  = 0x627; // ID do driver esquerdo
+  MOTOR_SPEED_A_E.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+  MOTOR_SPEED_A_E.data[0] = 0x40;  // Tipo de mensagem (40h recebe, 2Bh envia)
+  MOTOR_SPEED_A_E.data[1] = 0x07;  // Segundo byte do indice
+  MOTOR_SPEED_A_E.data[2] = 0x32;  // Primeiro byte do indice
+  MOTOR_SPEED_A_E.data[3] = 0x00;  // Sub-indice
+  MOTOR_SPEED_A_E.data[4] = 0x00;  // Segundo byte de dados
+  MOTOR_SPEED_A_E.data[5] = 0x80;  // Primeiro byte de dados
+  MOTOR_SPEED_A_E.data[6] = 0x00;  // Byte de dados não usado
+  MOTOR_SPEED_A_E.data[7] = 0x00;  // Byte de dados não usado
+  
+  MOTOR_SPEED_A_D.can_id  = 0x626; // ID do driver direito
+  MOTOR_SPEED_A_D.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+  MOTOR_SPEED_A_D.data[0] = 0x40;  // Tipo de mensagem (40h recebe, 2Bh envia)
+  MOTOR_SPEED_A_D.data[1] = 0x07;  // Segundo byte do indice
+  MOTOR_SPEED_A_D.data[2] = 0x32;  // Primeiro byte do indice
+  MOTOR_SPEED_A_D.data[3] = 0x00;  // Sub-indice
+  MOTOR_SPEED_A_D.data[4] = 0x00;  // Segundo byte de dados
+  MOTOR_SPEED_A_D.data[5] = 0x00;  // Primeiro byte de dados
+  MOTOR_SPEED_A_D.data[6] = 0x00;  // Byte de dados não usado
+  MOTOR_SPEED_A_D.data[7] = 0x00;  // Byte de dados não usado
+  
+  MOTOR_SPEED_A_E_recv.can_id  = 0x5A7; // ID do driver esquerdo
+  MOTOR_SPEED_A_E_recv.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+  MOTOR_SPEED_A_E_recv.data[0] = 0x42;  // Tipo de mensagem (40h recebe, 2Bh envia)
+  MOTOR_SPEED_A_E_recv.data[1] = 0x07;  // Segundo byte do indice
+  MOTOR_SPEED_A_E_recv.data[2] = 0x32;  // Primeiro byte do indice
+  MOTOR_SPEED_A_E_recv.data[3] = 0x00;  // Sub-indice
+  
+  MOTOR_SPEED_A_D_recv.can_id  = 0x5A6; // ID do driver direito
+  MOTOR_SPEED_A_D_recv.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
+  MOTOR_SPEED_A_D_recv.data[0] = 0x42;  // Tipo de mensagem (40h recebe, 2Bh envia)
+  MOTOR_SPEED_A_D_recv.data[1] = 0x07;  // Segundo byte do indice
+  MOTOR_SPEED_A_D_recv.data[2] = 0x32;  // Primeiro byte do indice
+  MOTOR_SPEED_A_D_recv.data[3] = 0x00;  // Sub-indice
+  
 }
-
