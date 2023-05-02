@@ -112,7 +112,7 @@ Após enviarmos obtivemos o seguinte retorno:
 
 **5A7 8 42 B 32 0 E1 0 0 0**
 
-Agora vamos analisar o primeiro byte de dados da resposta, que nesse caso está variando entre E1 e E2 conforme a leitura do sensor, como exemplo vamos utilizar E1h. 
+Agora vamos analisar o primeiro byte de dados da resposta, que nesse caso vale E1.
 
 Convertendo de hexadecimal para decimal temos o valor 225 
 
