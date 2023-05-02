@@ -158,7 +158,7 @@ byte converterLSB(long valor){
 
 No setup do código os frames para envio do VCL_Throttle ficam da seguinte forma 
 
-```
+```cpp
 VCL_ThrottleE.can_id  = 0x627; // ID do driver esquerdo
 VCL_ThrottleE.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
 VCL_ThrottleE.data[0] = 0x2B;  // Tipo de mensagem (40h recebe, 2Bh envia)
@@ -207,7 +207,7 @@ if((acelerador_E > 0)&&(acelerador_E <= 100)){
 
 Esse comando será utilizado para obtermos o feedback da velocidade dos motores em RPM, assim como o exemplo da temperatura temos uma solicitação de uma informação, logo, precisamos enviar a mensagem de solicitação e aguardar e filtrar a resposta do sistema. As mensagens de solicitação ficam da seguinte forma:  
 
-```
+```cpp
 MOTOR_SPEED_A_E.can_id  = 0x5A7; // ID do driver esquerdo
 MOTOR_SPEED_A_E.can_dlc = 8;     // Quantidade de bytes da mensagem CAN
 MOTOR_SPEED_A_E.data[0] = 0x42;  //40 Tipo de mensagem (40h recebe, 2Bh envia)
