@@ -89,7 +89,6 @@ Como estamos requisitando uma informação, os bytes de dados ficam vazios.
 
 No código do Arduino o frame fica da seguinte forma: 
 
-'oi'
 ```cpp
 canMsgSend.can_id  = 0x627; // ID CANbus
 canMsgSend.can_dlc = 8;     // Tamanho da mensagem em bytes
