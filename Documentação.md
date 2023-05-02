@@ -89,17 +89,18 @@ Como estamos requisitando uma informação, os bytes de dados ficam vazios.
 
 No código do Arduino o frame fica da seguinte forma: 
 
-"canMsgSend.can_id  = 0x627; // ID CANbus"
-"canMsgSend.can_dlc = 8;     // Tamanho da mensagem em bytes"
-"canMsgSend.data[0] = 0x40;  // Controle"
-"canMsgSend.data[1] = 0x0B;  // Segundo byte do indice"
-"canMsgSend.data[2] = 0x32;  // Primeiro byte do indice"
-"canMsgSend.data[3] = 0x00;  // sub-indice"
-"canMsgSend.data[4] = 0x00;  //"
-"canMsgSend.data[5] = 0x00;  //"
-"canMsgSend.data[6] = 0x00;  //"
-"canMsgSend.data[7] = 0x00;  //"
-
+'''
+canMsgSend.can_id  = 0x627; // ID CANbus
+canMsgSend.can_dlc = 8;     // Tamanho da mensagem em bytes
+canMsgSend.data[0] = 0x40;  // Controle
+canMsgSend.data[1] = 0x0B;  // Segundo byte do indice
+canMsgSend.data[2] = 0x32;  // Primeiro byte do indice
+canMsgSend.data[3] = 0x00;  // sub-indice
+canMsgSend.data[4] = 0x00;  //
+canMsgSend.data[5] = 0x00;  //
+canMsgSend.data[6] = 0x00;  //
+canMsgSend.data[7] = 0x00;  //
+'''
 A variável: 
 
 **canMsg1.can_dlc = 8;** 
