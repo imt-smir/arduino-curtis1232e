@@ -135,6 +135,8 @@ De 32768 a 65535 representa de -100% a 0%
 Para representar um valor de 0 a 65535 precisamos de 2 bytes, então usaremos os bytes de dados 4 e 5 do frame, o byte 4 é o menos significativo e o 5 é o mais significativo. O próximo passo é dividir o nosso valor em 2 bytes, fizemos da seguinte forma: para obter o byte mais significativo utilizamos um while que subtrai 256 do valor até que reste um valor menor que 256, a quantidade de vezes que subtraímos representa o valor do byte mais significativo. Para o byte menos significativo fizemos o mesmo processo, porém utilizamos como valor a quantidade restante das subtrações. 
 
 ```cpp
+// Separa o byte mais significativo do valor a ser enviado
+
 byte converterMSB(long valor){
     byte byte1 = 0;
     while(valor >= 256){
