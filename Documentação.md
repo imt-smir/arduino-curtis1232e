@@ -270,5 +270,34 @@ MOTOR_SPEED_A_D_recv.data[3] = 0x00;  // Sub-indice
 ```
 
 Na imagem abaixo podemos ver a filtragem da mensagem por meio de comparação: 
+```cpp
+if (mcp2515.readMessage(&canMsgReceive) == MCP2515::ERROR_OK) {
 
+     // Verifica se a mensagem recebida corresponde a velocidade do motor esquerdo
+     
+     if ((canMsgReceive.can_id == MOTOR_SPEED_A_E_recv.can_id)&& 
+       (canMsgReceive.can_dlc == MOTOR_SPEED_A_E_recv.can_dlc)&&
+       (canMsgReceive.data[0] == MOTOR_SPEED_A_E_recv.data[0])&&
+       (canMsgReceive.data[1] == MOTOR_SPEED_A_E_recv.data[1])&&
+       (canMsgReceive.data[2] == MOTOR_SPEED_A_E_recv.data[2])&&
+       (canMsgReceive.data[3] == MOTOR_SPEED_A_E_recv.data[3]))
+       {
+        // Une os valores dos bytes de dados 4 e 5 do frame para gerar o valor do RPM
+        rpmLidoE = canMsgReceive.data[5]*256 + canMsgReceive.data[4];
+      } 
+
+      // Verifica se a mensagem recebida corresponde a velocidade do motor direito
+      
+      if ((canMsgReceive.can_id == MOTOR_SPEED_A_D_recv.can_id)&&
+       (canMsgReceive.can_dlc == MOTOR_SPEED_A_D_recv.can_dlc)&&
+       (canMsgReceive.data[0] == MOTOR_SPEED_A_D_recv.data[0])&&
+       (canMsgReceive.data[1] == MOTOR_SPEED_A_D_recv.data[1])&&
+       (canMsgReceive.data[2] == MOTOR_SPEED_A_D_recv.data[2])&&
+       (canMsgReceive.data[3] == MOTOR_SPEED_A_D_recv.data[3]))
+       {
+        // Une os valores dos bytes de dados 4 e 5 do frame para gerar o valor do RPM
+        rpmLidoD = canMsgReceive.data[5]*256 + canMsgReceive.data[4];
+      } 
+   }
+```
 Temos também já a lógica que une os 2 bytes de dados, o mais significativo é multiplicado por 256 e o menos significativo é apenas somado ao valor, a partir dessa conta já obtemos o RPM do motor com "sinal" 
